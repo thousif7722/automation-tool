@@ -1,0 +1,23 @@
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  testMatch: ['**/tests/**/*.test.ts'],
+  moduleNameMapper: {
+    '^@insta-automation/types$': '<rootDir>/../../packages/types/src/index.ts',
+    '^@insta-automation/utils$': '<rootDir>/../../packages/utils/src/index.ts',
+    '^@insta-automation/config$': '<rootDir>/../../packages/config/src/index.ts',
+    '^@insta-automation/validation$': '<rootDir>/../../packages/validation/src/index.ts',
+    '^@insta-automation/database$': '<rootDir>/../../packages/database/src/index.ts',
+    '^@insta-automation/auth$': '<rootDir>/../../packages/auth/src/index.ts',
+    '^@insta-automation/permissions$': '<rootDir>/../../packages/permissions/src/index.ts',
+    '^@insta-automation/audit$': '<rootDir>/../../packages/audit/src/index.ts',
+    '^@insta-automation/events$': '<rootDir>/../../packages/events/src/index.ts',
+    '^@insta-automation/instagram$': '<rootDir>/../../packages/instagram/src/index.ts',
+    '^@insta-automation/queue$': '<rootDir>/../../packages/queue/src/index.ts',
+    '^@insta-automation/workflows$': '<rootDir>/../../packages/workflows/src/index.ts',
+    '^@insta-automation/ai$': '<rootDir>/../../packages/ai/src/index.ts',
+    '^@insta-automation/webhook-worker$': '<rootDir>/../../services/webhook-worker/src/index.ts',
+    '^@insta-automation/automation-worker$': '<rootDir>/../../services/automation-worker/src/index.ts',
+    '^@insta-automation/scheduler$': '<rootDir>/../../services/scheduler/src/index.ts',
+  },
+};

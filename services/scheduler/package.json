@@ -1,0 +1,15 @@
+{
+  "name": "@insta-automation/scheduler",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@insta-automation/config": "file:../../packages/config",
+    "@insta-automation/database": "file:../../packages/database",
+    "@insta-automation/queue": "file:../../packages/queue"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
+  }
+}

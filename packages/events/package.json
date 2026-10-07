@@ -1,0 +1,14 @@
+{
+  "name": "@insta-automation/events",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@insta-automation/database": "file:../database",
+    "@insta-automation/types": "file:../types"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
+  }
+}

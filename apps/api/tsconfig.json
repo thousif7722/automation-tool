@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@insta-automation/types": ["../../packages/types/src/index.ts"],
+      "@insta-automation/utils": ["../../packages/utils/src/index.ts"],
+      "@insta-automation/config": ["../../packages/config/src/index.ts"],
+      "@insta-automation/validation": ["../../packages/validation/src/index.ts"],
+      "@insta-automation/database": ["../../packages/database/src/index.ts"],
+      "@insta-automation/auth": ["../../packages/auth/src/index.ts"],
+      "@insta-automation/permissions": ["../../packages/permissions/src/index.ts"],
+      "@insta-automation/audit": ["../../packages/audit/src/index.ts"],
+      "@insta-automation/events": ["../../packages/events/src/index.ts"],
+      "@insta-automation/instagram": ["../../packages/instagram/src/index.ts"],
+      "@insta-automation/queue": ["../../packages/queue/src/index.ts"],
+      "@insta-automation/workflows": ["../../packages/workflows/src/index.ts"],
+      "@insta-automation/ai": ["../../packages/ai/src/index.ts"],
+      "@insta-automation/billing": ["../../packages/billing/src/index.ts"],
+      "@insta-automation/webhook-worker": ["../../services/webhook-worker/src/index.ts"],
+      "@insta-automation/automation-worker": ["../../services/automation-worker/src/index.ts"],
+      "@insta-automation/scheduler": ["../../services/scheduler/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*", "tests/**/*", "../../packages/**/*", "../../services/**/*"]
+}

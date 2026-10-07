@@ -1,0 +1,19 @@
+{
+  "name": "@insta-automation/workflows",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@insta-automation/config": "file:../config",
+    "@insta-automation/database": "file:../database",
+    "@insta-automation/events": "file:../events",
+    "@insta-automation/instagram": "file:../instagram",
+    "@insta-automation/queue": "file:../queue",
+    "@insta-automation/types": "file:../types",
+    "@insta-automation/utils": "file:../utils"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
+  }
+}
