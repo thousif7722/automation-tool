@@ -3,8 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: api-runner
     ports:
-      - "4000:4000"
+      - "127.0.0.1:4000:4000"
     env_file:
       - .env
     environment:
@@ -16,6 +17,22 @@ services:
     depends_on:
       - mongo
       - redis
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web-runner
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - NEXT_PUBLIC_API_URL=https://autodm.onewayfix.com/api
+    depends_on:
+      - api
     restart: unless-stopped
 
   mongo:

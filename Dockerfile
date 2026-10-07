@@ -1,4 +1,4 @@
-# Multi-stage production build for Instagram Automation OS API
+# Multi-stage production build for Instagram Automation OS
 
 FROM node:20-alpine AS base
 RUN corepack enable && corepack prepare pnpm@9.12.1 --activate
@@ -36,8 +36,8 @@ FROM dependencies AS builder
 COPY . .
 RUN pnpm build
 
-# Stage 3: Runner
-FROM node:20-alpine AS runner
+# Stage 3: API Runner
+FROM node:20-alpine AS api-runner
 WORKDIR /app
 ENV NODE_ENV=production
 
@@ -48,3 +48,20 @@ EXPOSE 4000
 USER node
 
 CMD ["node", "apps/api/dist/index.js"]
+
+# Stage 4: Web Runner (Next.js Standalone)
+FROM node:20-alpine AS web-runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/web/.next/standalone ./
+COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
+
+EXPOSE 3000
+
+USER node
+
+CMD ["node", "apps/web/server.js"]
