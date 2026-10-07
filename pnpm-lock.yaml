@@ -54,6 +54,9 @@ importers:
       '@insta-automation/auth':
         specifier: file:../../packages/auth
         version: link:../../packages/auth
+      '@insta-automation/billing':
+        specifier: file:../../packages/billing
+        version: link:../../packages/billing
       '@insta-automation/config':
         specifier: file:../../packages/config
         version: link:../../packages/config

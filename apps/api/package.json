@@ -13,6 +13,7 @@
     "@insta-automation/ai": "file:../../packages/ai",
     "@insta-automation/audit": "file:../../packages/audit",
     "@insta-automation/auth": "file:../../packages/auth",
+    "@insta-automation/billing": "file:../../packages/billing",
     "@insta-automation/config": "file:../../packages/config",
     "@insta-automation/database": "file:../../packages/database",
     "@insta-automation/events": "file:../../packages/events",
