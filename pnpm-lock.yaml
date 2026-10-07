@@ -223,6 +223,9 @@ importers:
       '@types/node':
         specifier: ^20.12.7
         version: 20.19.43
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
 
   packages/auth:
     dependencies:
@@ -245,15 +248,28 @@ importers:
       '@types/jsonwebtoken':
         specifier: ^9.0.6
         version: 9.0.10
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
 
   packages/billing:
     dependencies:
       '@insta-automation/types':
-        specifier: workspace:*
+        specifier: file:../types
         version: link:../types
       '@insta-automation/utils':
-        specifier: workspace:*
+        specifier: file:../utils
         version: link:../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
 
   packages/config:
     dependencies:
@@ -267,12 +283,25 @@ importers:
       '@types/node':
         specifier: ^20.12.7
         version: 20.19.43
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
 
   packages/database:
     dependencies:
+      '@insta-automation/types':
+        specifier: file:../types
+        version: link:../types
       mongoose:
         specifier: ^8.3.1
         version: 8.24.5
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
 
   packages/events:
     dependencies:
@@ -324,6 +353,9 @@ importers:
       '@types/node':
         specifier: ^20.12.7
         version: 20.19.43
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
 
   packages/queue:
     dependencies:
@@ -353,13 +385,23 @@ importers:
         specifier: ^5.4.5
         version: 5.9.3
 
-  packages/types: {}
+  packages/types:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
 
   packages/utils:
     devDependencies:
       '@types/node':
         specifier: ^20.12.7
         version: 20.19.43
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
 
   packages/validation:
     dependencies:
@@ -370,6 +412,9 @@ importers:
       '@types/node':
         specifier: ^20.12.7
         version: 20.19.43
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
 
   packages/workflows:
     dependencies:

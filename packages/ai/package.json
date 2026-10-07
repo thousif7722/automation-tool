@@ -2,8 +2,18 @@
   "name": "@insta-automation/ai",
   "version": "1.0.0",
   "description": "AI Agent architecture, model providers, tool registry, prompt defense, and workflow generator",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "@insta-automation/config": "file:../config",
     "@insta-automation/database": "file:../database",

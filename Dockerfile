@@ -34,7 +34,7 @@ RUN pnpm install --frozen-lockfile
 # Stage 2: Build source code
 FROM dependencies AS builder
 COPY . .
-RUN pnpm --filter @insta-automation/api build
+RUN pnpm build
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner
@@ -47,4 +47,4 @@ EXPOSE 4000
 
 USER node
 
-CMD ["node", "apps/api/dist/apps/api/src/index.js"]
+CMD ["node", "apps/api/dist/index.js"]
