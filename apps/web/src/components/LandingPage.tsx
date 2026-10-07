@@ -28,6 +28,7 @@ import {
   Clock,
   LayoutDashboard,
   ShieldAlert,
+  Building2,
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
@@ -474,6 +475,82 @@ export const LandingPage: React.FC = () => {
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURE DEEP-DIVE GRID (INBOX, CRM, ANALYTICS, AI AGENT, AGENCY) */}
+      <section className="py-20 px-6 max-w-7xl mx-auto space-y-12">
+        <div className="text-center space-y-3 max-w-3xl mx-auto">
+          <h2 className="text-xs font-extrabold text-violet-400 uppercase tracking-widest">Platform Capabilities</h2>
+          <p className="text-3xl font-black text-white tracking-tight">Everything You Need to Scale Instagram Sales</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Card 1: AI Customer Agent */}
+          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
+            <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-400 w-fit">
+              <Bot className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Autonomous AI Customer Agent</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Upload your website, FAQs, or product catalog into AI Studio. Your agent answers business questions 24/7 in your exact brand voice.
+            </p>
+          </div>
+
+          {/* Card 2: Unified Social Inbox */}
+          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
+            <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-400 w-fit">
+              <MessageSquare className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Unified Social Inbox</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              View and respond to all Instagram comments, DMs, and story mentions in a single high-speed inbox with human takeover options.
+            </p>
+          </div>
+
+          {/* Card 3: Built-in CRM & Lead Qualification */}
+          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
+            <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 w-fit">
+              <Users className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-white">CRM & Lead Qualification</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Automatically build rich contact profiles. Score leads based on intent, capture emails/phone numbers, and trigger webhook notifications.
+            </p>
+          </div>
+
+          {/* Card 4: Conversion & Content Analytics */}
+          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
+            <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400 w-fit">
+              <BarChart3 className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Conversion & Analytics</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Track comment-to-DM conversion rates, workflow engagement, AI token efficiency, and lead pipeline growth in real-time.
+            </p>
+          </div>
+
+          {/* Card 5: Agency & Multi-Workspace Control */}
+          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
+            <div className="p-3 rounded-2xl bg-violet-500/10 text-violet-400 w-fit">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Agency & Multi-Workspace Control</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Manage multiple client Instagram accounts, assign granular team permission roles, and generate white-label performance reports.
+            </p>
+          </div>
+
+          {/* Card 6: 100% Meta Graph API Compliant */}
+          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
+            <div className="p-3 rounded-2xl bg-pink-500/10 text-pink-400 w-fit">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Meta Graph API Compliant</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Built on official Meta Graph Webhooks and Messaging APIs. Zero password sharing required, maintaining 100% account safety.
+            </p>
           </div>
         </div>
       </section>
