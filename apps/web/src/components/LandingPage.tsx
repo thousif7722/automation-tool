@@ -690,7 +690,7 @@ export const LandingPage: React.FC = () => {
             Ready to Automate Your Instagram & Scale Your Sales?
           </h2>
           <p className="text-xs sm:text-sm text-slate-200 max-w-2xl mx-auto relative z-10">
-            Join thousands of creators, e-commerce stores, and agencies turning Instagram comments into paying customers with AutoDM.
+            Turn Instagram comments into qualified leads and direct sales with AutoDM.
           </p>
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
             <Link

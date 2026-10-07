@@ -491,7 +491,8 @@ export default function AdminDashboardPage() {
                     <th className="pb-3">Actor</th>
                     <th className="pb-3">Action</th>
                     <th className="pb-3">Target</th>
-                    <th className="pb-3">IP</th>
+                    <th className="pb-3">Result</th>
+                    <th className="pb-3">Reason</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 text-slate-300">
@@ -501,7 +502,8 @@ export default function AdminDashboardPage() {
                       <td className="py-3 font-bold text-white">{log.actor}</td>
                       <td className="py-3 text-amber-400 font-bold">{log.action}</td>
                       <td className="py-3 text-slate-300">{log.target}</td>
-                      <td className="py-3 text-slate-500 font-mono">{log.ip}</td>
+                      <td className="py-3 font-bold text-emerald-400">{log.result || 'SUCCESS'}</td>
+                      <td className="py-3 text-slate-400">{log.reason || 'N/A'}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -5,7 +5,7 @@ import { authMiddleware, adminOnly } from '../middleware/auth';
 export const adminRouter = Router();
 
 // In-memory Audit Log store for platform admin actions
-interface AuditLogEntry {
+export interface AuditLogEntry {
   id: string;
   actor: string;
   role: string;
@@ -15,6 +15,8 @@ interface AuditLogEntry {
   reason?: string;
   timestamp: string;
   ip: string;
+  requestId: string;
+  result: 'SUCCESS' | 'FAILED' | 'DENIED';
 }
 
 const auditLogs: AuditLogEntry[] = [
@@ -26,6 +28,9 @@ const auditLogs: AuditLogEntry[] = [
     target: 'System',
     timestamp: new Date(Date.now() - 3600000).toISOString(),
     ip: '127.0.0.1',
+    requestId: 'req_init_001',
+    result: 'SUCCESS',
+    reason: 'Initial platform initialization',
   },
 ];
 
@@ -38,10 +43,8 @@ const featureFlags: Record<string, { enabled: boolean; scope: string; descriptio
   ANALYTICS: { enabled: true, scope: 'GLOBAL', description: 'Conversion & attribution metrics' },
   AGENCY: { enabled: true, scope: 'PLAN:AGENCY', description: 'Multi-workspace agency control' },
   MCP: { enabled: true, scope: 'GLOBAL', description: 'Multi-MCP tool server execution' },
-  NEW_INBOX: { enabled: fontEnabled(), scope: 'PERCENTAGE:50', description: 'Next-gen social inbox interface' },
+  NEW_INBOX: { enabled: true, scope: 'PERCENTAGE:50', description: 'Next-gen social inbox interface' },
 };
-
-function fontEnabled() { return true; }
 
 // Emergency controls state
 const emergencyControls: Record<string, boolean> = {
@@ -120,6 +123,10 @@ adminRouter.post('/tenants/:id/suspend', async (req: Request, res: Response) => 
   const { id } = req.params;
   const { reason } = req.body;
 
+  if (!reason) {
+    return res.status(400).json({ success: false, error: 'Reason required for audit log' });
+  }
+
   auditLogs.unshift({
     id: `audit_${Date.now()}`,
     actor: req.user?.email || 'admin@automationos.io',
@@ -127,9 +134,11 @@ adminRouter.post('/tenants/:id/suspend', async (req: Request, res: Response) => 
     action: 'TENANT_SUSPENDED',
     target: `Workspace:${id}`,
     tenantId: id,
-    reason: reason || 'Violation of platform TOS',
+    reason: reason,
     timestamp: new Date().toISOString(),
     ip: req.ip || '127.0.0.1',
+    requestId: `req_${Date.now()}`,
+    result: 'SUCCESS',
   });
 
   return res.json({ success: true, message: `Tenant ${id} suspended successfully.`, tenantId: id });
@@ -145,8 +154,11 @@ adminRouter.post('/tenants/:id/reactivate', async (req: Request, res: Response) 
     action: 'TENANT_REACTIVATED',
     target: `Workspace:${id}`,
     tenantId: id,
+    reason: 'Manual admin reactivation',
     timestamp: new Date().toISOString(),
     ip: req.ip || '127.0.0.1',
+    requestId: `req_${Date.now()}`,
+    result: 'SUCCESS',
   });
 
   return res.json({ success: true, message: `Tenant ${id} reactivated.`, tenantId: id });
@@ -171,8 +183,11 @@ adminRouter.post('/queues/retry-failed', (req: Request, res: Response) => {
     role: req.user?.globalRole || 'SUPER_ADMIN',
     action: 'QUEUE_RETRY_FAILED_JOBS',
     target: 'BullMQ:instagram-webhook-events',
+    reason: 'Super Admin Replaying Dead-Letter Jobs',
     timestamp: new Date().toISOString(),
     ip: req.ip || '127.0.0.1',
+    requestId: `req_${Date.now()}`,
+    result: 'SUCCESS',
   });
   return res.json({ success: true, retriedCount: 12 });
 });
@@ -213,6 +228,8 @@ adminRouter.post('/feature-flags', (req: Request, res: Response) => {
       reason: `Flag ${flagKey} set to ${enabled}`,
       timestamp: new Date().toISOString(),
       ip: req.ip || '127.0.0.1',
+      requestId: `req_${Date.now()}`,
+      result: 'SUCCESS',
     });
   }
   return res.json({ success: true, featureFlags });
@@ -237,6 +254,8 @@ adminRouter.post('/emergency-controls', (req: Request, res: Response) => {
       reason: reason || 'Elevated Safety Execution',
       timestamp: new Date().toISOString(),
       ip: req.ip || '127.0.0.1',
+      requestId: `req_${Date.now()}`,
+      result: 'SUCCESS',
     });
   }
   return res.json({ success: true, emergencyControls });
@@ -265,8 +284,11 @@ adminRouter.post('/cms/publish', (req: Request, res: Response) => {
       role: req.user?.globalRole || 'SUPER_ADMIN',
       action: 'CMS_PUBLISHED',
       target: 'Marketing Website Landing Page',
+      reason: 'Live CMS Update',
       timestamp: new Date().toISOString(),
       ip: req.ip || '127.0.0.1',
+      requestId: `req_${Date.now()}`,
+      result: 'SUCCESS',
     });
   }
   return res.json({ success: true, cmsContent });
@@ -276,6 +298,10 @@ adminRouter.post('/cms/publish', (req: Request, res: Response) => {
 adminRouter.post('/impersonate', (req: Request, res: Response) => {
   const { workspaceId, reason } = req.body;
 
+  if (!reason) {
+    return res.status(400).json({ success: false, error: 'Mandatory reason required for support impersonation audit' });
+  }
+
   auditLogs.unshift({
     id: `audit_${Date.now()}`,
     actor: req.user?.email || 'admin@automationos.io',
@@ -283,9 +309,11 @@ adminRouter.post('/impersonate', (req: Request, res: Response) => {
     action: 'IMPERSONATION_STARTED',
     target: `Workspace:${workspaceId}`,
     tenantId: workspaceId,
-    reason: reason || 'Customer support ticket investigation',
+    reason: reason,
     timestamp: new Date().toISOString(),
     ip: req.ip || '127.0.0.1',
+    requestId: `req_${Date.now()}`,
+    result: 'SUCCESS',
   });
 
   return res.json({
