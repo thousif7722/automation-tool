@@ -26,8 +26,9 @@ export default function LoginPage() {
 
       if (res.ok) {
         const data = await res.json();
-        if (data.token) {
-          localStorage.setItem('token', data.token);
+        const token = data.tokens?.accessToken || data.token;
+        if (token) {
+          localStorage.setItem('token', token);
         }
         router.push('/app');
       } else {

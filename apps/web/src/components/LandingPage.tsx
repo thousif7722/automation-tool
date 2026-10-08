@@ -290,7 +290,7 @@ export const LandingPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <ShieldCheck className="w-6 h-6 text-emerald-400" />
             <div className="text-left">
-              <span className="block text-xs font-bold text-white uppercase tracking-wider">Meta Partner API</span>
+              <span className="block text-xs font-bold text-white uppercase tracking-wider">Built with official Meta APIs</span>
               <span className="text-[11px] text-slate-400">100% Official Graph Webhook Architecture</span>
             </div>
           </div>

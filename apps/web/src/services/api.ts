@@ -1,13 +1,16 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') || 'dev_bypass_token' : 'dev_bypass_token';
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-  const headers = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-    ...(options.headers || {}),
+    ...(options.headers as Record<string, string> || {}),
   };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, {
