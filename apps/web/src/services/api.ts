@@ -1,14 +1,17 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
-async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+export async function fetchAPI<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const token =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('admin_token') || localStorage.getItem('autodm_token') || localStorage.getItem('token')
+      : null;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> || {}),
   };
 
-  if (token) {
+  if (token && !headers['Authorization']) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
@@ -20,7 +23,10 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error?.message || errorData.message || `API error (${response.status})`);
+      const err: any = new Error(errorData.error?.message || errorData.message || `API error (${response.status})`);
+      err.status = response.status;
+      err.data = errorData;
+      throw err;
     }
 
     return await response.json();
