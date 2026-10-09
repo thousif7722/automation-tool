@@ -49,14 +49,36 @@ app.use(requestContextMiddleware);
 app.use(securityHeadersMiddleware);
 app.use(rateLimiter({ max: env.NODE_ENV === 'production' ? 100 : 1000 }));
 
-const allowedOrigins = [env.WEB_URL, env.ADMIN_URL, env.LANDING_URL].filter(Boolean);
+const defaultAllowed = [
+  'https://autodm.onewayfix.com',
+  'https://admin.autodm.onewayfix.com',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:4000',
+];
+
+const envAllowed = [env.WEB_URL, env.ADMIN_URL, env.LANDING_URL, env.API_URL]
+  .filter(Boolean)
+  .map((u) => u.replace(/\/$/, ''));
+
+const customAllowed = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((s) => s.trim().replace(/\/$/, ''))
+  : [];
+
+const allowedOriginsSet = new Set(
+  [...defaultAllowed, ...envAllowed, ...customAllowed].filter(Boolean)
+);
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || env.NODE_ENV === 'development' || allowedOrigins.includes(origin)) {
+      if (!origin) return callback(null, true);
+      const cleanOrigin = origin.replace(/\/$/, '');
+      if (env.NODE_ENV === 'development' || allowedOriginsSet.has(cleanOrigin)) {
         return callback(null, true);
       }
-      return callback(new Error('CORS policy violation: Origin not allowed'));
+      return callback(null, false);
     },
     credentials: true,
   })

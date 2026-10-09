@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import {
   Home,
   Zap,
@@ -13,15 +15,14 @@ import {
   Send,
   Sparkles,
   ChevronDown,
-  ChevronRight,
   Menu,
   X,
-  HelpCircle,
-  User,
   Building2,
   Check,
   PanelLeftClose,
   PanelLeftOpen,
+  LogOut,
+  RefreshCw,
 } from 'lucide-react';
 import { HomeTab } from './tabs/HomeTab';
 import { AutomationTab } from './tabs/AutomationTab';
@@ -33,6 +34,7 @@ import { ContentTab } from './tabs/ContentTab';
 import { AnalyticsTab } from './tabs/AnalyticsTab';
 import { TeamTab } from './tabs/TeamTab';
 import { SettingsTab } from './tabs/SettingsTab';
+import { api } from '../services/api';
 
 export type MainTabType =
   | 'HOME'
@@ -54,28 +56,100 @@ export const MainLayout: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
-  const [activeWorkspace, setActiveWorkspace] = useState('@mybrand_official');
   const [conversationCount, setConversationCount] = useState<number | null>(null);
 
-  React.useEffect(() => {
-    import('../services/api').then(({ api }) => {
+  // Authentication & Session state
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [userWorkspaces, setUserWorkspaces] = useState<any[]>([]);
+  const [activeWorkspace, setActiveWorkspace] = useState<any | null>(null);
+
+  useEffect(() => {
+    async function initSession() {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+
+      try {
+        const res = await api.getCurrentUser();
+        if (res.success && res.user) {
+          setCurrentUser(res.user);
+          const wsList = res.workspaces || [];
+          setUserWorkspaces(wsList);
+
+          const savedWsId = localStorage.getItem('active_workspace_id');
+          const primaryWs = wsList.find((w: any) => w.id === savedWsId) || wsList[0] || {
+            id: 'ws_default',
+            name: `${res.user.name}'s Workspace`,
+            type: 'Primary Account',
+          };
+          setActiveWorkspace(primaryWs);
+          if (primaryWs?.id) {
+            localStorage.setItem('active_workspace_id', primaryWs.id);
+          }
+          setLoadingUser(false);
+        } else {
+          throw new Error('Invalid user session');
+        }
+      } catch (err: any) {
+        console.warn('Session verification failed:', err.message);
+        localStorage.removeItem('token');
+        localStorage.removeItem('active_workspace_id');
+        window.location.href = '/login';
+      }
+    }
+
+    initSession();
+  }, []);
+
+  useEffect(() => {
+    if (!loadingUser) {
       api.getConversations()
         .then((res) => setConversationCount(res.count || (res.data ? res.data.length : 0)))
         .catch(() => setConversationCount(0));
-    });
-  }, []);
+    }
+  }, [loadingUser]);
 
-  const workspaces = [
-    { id: 'ws_1', name: '@mybrand_official', type: 'Instagram Creator' },
-    { id: 'ws_2', name: '@fashion_store_uk', type: 'Instagram Business' },
-    { id: 'ws_3', name: '@agency_demo', type: 'Agency Account' },
-  ];
+  const handleLogout = async () => {
+    try {
+      await api.logout().catch(() => {});
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('active_workspace_id');
+      window.location.href = '/login';
+    }
+  };
+
+  const handleSelectWorkspace = (ws: any) => {
+    setActiveWorkspace(ws);
+    if (ws?.id) {
+      localStorage.setItem('active_workspace_id', ws.id);
+    }
+    setWorkspaceMenuOpen(false);
+  };
 
   const handleNavClick = (tabId: MainTabType, subTab?: AutomationSubTabType) => {
     setActiveTab(tabId);
     if (subTab) setAutomationSubTab(subTab);
     setMobileOpen(false);
   };
+
+  if (loadingUser) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center space-y-4 text-slate-100 font-sans">
+        <div className="p-3 rounded-2xl bg-gradient-to-tr from-violet-600 to-purple-600 text-white shadow-xl shadow-violet-600/30 animate-pulse">
+          <Send className="w-8 h-8" />
+        </div>
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+          <RefreshCw className="w-4 h-4 animate-spin text-violet-400" />
+          <span>Verifying authentication & restoring workspace...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans select-none overflow-x-hidden">
@@ -85,7 +159,7 @@ export const MainLayout: React.FC = () => {
           <div className="p-1.5 rounded-lg bg-gradient-to-tr from-violet-600 to-purple-600 text-white">
             <Send className="w-4 h-4" />
           </div>
-          <span className="text-sm font-extrabold text-white tracking-tight">AUTOMATION OS</span>
+          <span className="text-sm font-extrabold text-white tracking-tight">AutoDM OS</span>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -110,8 +184,8 @@ export const MainLayout: React.FC = () => {
                   <Send className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-sm font-extrabold text-white tracking-tight block leading-none">AUTOMATION OS</span>
-                  <span className="text-[10px] text-violet-400 font-semibold block mt-0.5 tracking-wider uppercase">AI Marketing Platform</span>
+                  <span className="text-sm font-extrabold text-white tracking-tight block leading-none">AutoDM OS</span>
+                  <span className="text-[10px] text-violet-400 font-semibold block mt-0.5 tracking-wider uppercase">AI Automation SaaS</span>
                 </div>
               </div>
             )}
@@ -139,7 +213,7 @@ export const MainLayout: React.FC = () => {
             >
               <div className="flex items-center gap-2 truncate">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                {!isCollapsed && <span className="font-bold text-slate-200 truncate">{activeWorkspace}</span>}
+                {!isCollapsed && <span className="font-bold text-slate-200 truncate">{activeWorkspace?.name || 'My Workspace'}</span>}
               </div>
               {!isCollapsed && <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
             </button>
@@ -148,24 +222,30 @@ export const MainLayout: React.FC = () => {
             {workspaceMenuOpen && !isCollapsed && (
               <div className="absolute top-12 left-0 right-0 bg-slate-900 border border-slate-800 rounded-xl p-2 shadow-2xl z-50 space-y-1">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 block py-1">Workspaces</span>
-                {workspaces.map((ws) => (
+                {userWorkspaces.length > 0 ? (
+                  userWorkspaces.map((ws) => (
+                    <button
+                      key={ws.id}
+                      onClick={() => handleSelectWorkspace(ws)}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between hover:bg-slate-800 ${
+                        activeWorkspace?.id === ws.id ? 'bg-violet-600/20 text-violet-300 font-semibold' : 'text-slate-300'
+                      }`}
+                    >
+                      <div className="truncate">
+                        <span className="block truncate font-medium">{ws.name}</span>
+                        <span className="text-[10px] text-slate-400 block">{ws.plan || 'Workspace'}</span>
+                      </div>
+                      {activeWorkspace?.id === ws.id && <Check className="w-3.5 h-3.5 text-violet-400 shrink-0" />}
+                    </button>
+                  ))
+                ) : (
                   <button
-                    key={ws.id}
-                    onClick={() => {
-                      setActiveWorkspace(ws.name);
-                      setWorkspaceMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between hover:bg-slate-800 ${
-                      activeWorkspace === ws.name ? 'bg-violet-600/20 text-violet-300 font-semibold' : 'text-slate-300'
-                    }`}
+                    onClick={() => setWorkspaceMenuOpen(false)}
+                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800"
                   >
-                    <div className="truncate">
-                      <span className="block truncate font-medium">{ws.name}</span>
-                      <span className="text-[10px] text-slate-400 block">{ws.type}</span>
-                    </div>
-                    {activeWorkspace === ws.name && <Check className="w-3.5 h-3.5 text-violet-400 shrink-0" />}
+                    {activeWorkspace?.name || 'Default Workspace'}
                   </button>
-                ))}
+                )}
               </div>
             )}
           </div>
@@ -358,26 +438,39 @@ export const MainLayout: React.FC = () => {
           </button>
         </nav>
 
-        {/* Footer Profile & Help Section */}
+        {/* Footer User Profile & Logout Action */}
         <div className="p-3 border-t border-slate-800/80 space-y-2">
           {!isCollapsed ? (
             <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800/80">
               <div className="flex items-center gap-2 truncate">
                 <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shrink-0">
-                  A
+                  {(currentUser?.name || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div className="truncate">
-                  <span className="block text-xs font-bold text-white truncate">Admin Account</span>
-                  <span className="block text-[10px] text-slate-400 truncate">admin@automationos.io</span>
+                  <span className="block text-xs font-bold text-white truncate">{currentUser?.name || 'User'}</span>
+                  <span className="block text-[10px] text-slate-400 truncate">{currentUser?.email || ''}</span>
                 </div>
               </div>
-              <HelpCircle className="w-4 h-4 text-slate-400 hover:text-white cursor-pointer shrink-0" />
+              <button
+                onClick={handleLogout}
+                className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-red-400 transition-colors shrink-0"
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           ) : (
-            <div className="flex justify-center py-1">
+            <div className="flex flex-col items-center gap-2 py-1">
               <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white">
-                A
+                {(currentUser?.name || 'U').charAt(0).toUpperCase()}
               </div>
+              <button
+                onClick={handleLogout}
+                className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-red-400 transition-colors"
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           )}
         </div>

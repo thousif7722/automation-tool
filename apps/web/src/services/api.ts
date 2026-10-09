@@ -3,7 +3,12 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 export async function fetchAPI<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token =
     typeof window !== 'undefined'
-      ? localStorage.getItem('admin_token') || localStorage.getItem('autodm_token') || localStorage.getItem('token')
+      ? localStorage.getItem('token') || localStorage.getItem('autodm_token') || localStorage.getItem('admin_token')
+      : null;
+
+  const activeWorkspaceId =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('active_workspace_id')
       : null;
 
   const headers: Record<string, string> = {
@@ -13,6 +18,10 @@ export async function fetchAPI<T = any>(endpoint: string, options: RequestInit =
 
   if (token && !headers['Authorization']) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  if (activeWorkspaceId && !headers['x-workspace-id']) {
+    headers['x-workspace-id'] = activeWorkspaceId;
   }
 
   try {
@@ -37,6 +46,10 @@ export async function fetchAPI<T = any>(endpoint: string, options: RequestInit =
 }
 
 export const api = {
+  // Auth & Session
+  getCurrentUser: () => fetchAPI<{ success: boolean; user: any; workspaces: any[] }>('/auth/me'),
+  logout: () => fetchAPI<{ success: boolean; message: string }>('/auth/logout', { method: 'POST' }),
+
   // Analytics
   getAnalytics: () => fetchAPI<{ success: boolean; analytics: any }>('/analytics'),
 

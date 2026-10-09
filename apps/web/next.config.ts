@@ -12,6 +12,15 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  async rewrites() {
+    const apiHost = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${apiHost.replace(/\/$/, '')}/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
