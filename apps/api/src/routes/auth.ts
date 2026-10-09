@@ -5,7 +5,7 @@ import { RegisterSchema, LoginSchema, GoogleAuthSchema } from '@insta-automation
 import { getEnv } from '@insta-automation/config';
 import { audit, AuditAction } from '@insta-automation/audit';
 import { validate } from '../middleware/validation';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, adminOnly } from '../middleware/auth';
 import { Errors } from '../middleware/errorHandler';
 
 export const authRouter = Router();
@@ -185,6 +185,94 @@ authRouter.get('/me', authMiddleware, async (req: Request, res: Response, next: 
         name: w.name,
         role: w.members.find((m: any) => m.userId.toString() === user._id.toString())?.role,
       })),
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+authRouter.post('/admin-login', validate(LoginSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await UserModel.findOne({ email }).select('+passwordHash').exec();
+    if (!user || !user.passwordHash) {
+      await audit({ action: AuditAction.AUTH_ADMIN_LOGIN, ipAddress: req.ip, userAgent: req.header('user-agent'), result: 'FAILURE', metadata: { email, reason: 'Invalid user' } });
+      return next(Errors.Unauthorized('Invalid administrator credentials'));
+    }
+
+    const isMatch = await verifyPassword(password, user.passwordHash);
+    if (!isMatch) {
+      await audit({ action: AuditAction.AUTH_ADMIN_LOGIN, ipAddress: req.ip, userAgent: req.header('user-agent'), result: 'FAILURE', metadata: { email, reason: 'Invalid password' } });
+      return next(Errors.Unauthorized('Invalid administrator credentials'));
+    }
+
+    if (user.globalRole !== 'admin' && user.globalRole !== 'superadmin') {
+      await audit({
+        userId: user._id.toString(),
+        action: AuditAction.AUTH_ADMIN_LOGIN,
+        ipAddress: req.ip,
+        userAgent: req.header('user-agent'),
+        result: 'DENIED',
+        metadata: { email, role: user.globalRole, reason: 'Forbidden: Insufficient platform role' },
+      });
+      return next(Errors.Forbidden('Platform administrator privileges required for Super Admin Portal access'));
+    }
+
+    user.lastLoginAt = new Date();
+    await user.save();
+
+    const env = getEnv();
+    const tokenPayload = { sub: user._id.toString(), email: user.email, name: user.name, globalRole: user.globalRole };
+    const tokens = signAccessToken(tokenPayload, env.JWT_SECRET, env.JWT_EXPIRES_IN);
+
+    await audit({
+      userId: user._id.toString(),
+      action: AuditAction.AUTH_ADMIN_LOGIN,
+      ipAddress: req.ip,
+      userAgent: req.header('user-agent'),
+      result: 'SUCCESS',
+      metadata: { role: user.globalRole },
+    });
+
+    return res.json({
+      success: true,
+      message: 'Super Admin authentication successful',
+      tokens,
+      user: { id: user._id.toString(), email: user.email, name: user.name, globalRole: user.globalRole },
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+authRouter.post('/logout', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await audit({
+      userId: req.user?.id,
+      action: AuditAction.AUTH_LOGOUT,
+      ipAddress: req.ip,
+      userAgent: req.header('user-agent'),
+      result: 'SUCCESS',
+    });
+    return res.json({ success: true, message: 'Logged out successfully' });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+authRouter.get('/admin-me', authMiddleware, adminOnly, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await UserModel.findById(req.user!.id).select('-passwordHash').lean();
+    if (!user) return next(Errors.NotFound('User account not found'));
+
+    if (user.globalRole !== 'admin' && user.globalRole !== 'superadmin') {
+      return next(Errors.Forbidden('Admin platform privileges required'));
+    }
+
+    return res.json({
+      success: true,
+      user: { id: user._id.toString(), email: user.email, name: user.name, globalRole: user.globalRole },
     });
   } catch (err) {
     return next(err);

@@ -1,5 +1,14 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { UserModel, WorkspaceModel, InstagramAccountModel, AutomationRuleModel, LeadModel, MessageModel } from '@insta-automation/database';
+import {
+  UserModel,
+  WorkspaceModel,
+  InstagramAccountModel,
+  AutomationRuleModel,
+  LeadModel,
+  MessageModel,
+  AIAuditLogModel,
+  SubscriptionModel,
+} from '@insta-automation/database';
 import { authMiddleware, adminOnly } from '../middleware/auth';
 
 export const adminRouter = Router();
@@ -77,25 +86,40 @@ adminRouter.use(adminOnly);
 // 1. Platform Overview Stats
 adminRouter.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const totalUsers = await UserModel.countDocuments().catch(() => 142);
-    const totalWorkspaces = await WorkspaceModel.countDocuments().catch(() => 89);
-    const totalConnectedAccounts = await InstagramAccountModel.countDocuments({ status: 'CONNECTED' }).catch(() => 64);
-    const totalWorkflows = await AutomationRuleModel.countDocuments().catch(() => 312);
-    const totalLeads = await LeadModel.countDocuments().catch(() => 18450);
-    const totalMessages = await MessageModel.countDocuments().catch(() => 142800);
+    const totalUsers = await UserModel.countDocuments();
+    const totalWorkspaces = await WorkspaceModel.countDocuments();
+    const totalConnectedAccounts = await InstagramAccountModel.countDocuments({ status: 'CONNECTED' });
+    const totalWorkflows = await AutomationRuleModel.countDocuments();
+    const totalLeads = await LeadModel.countDocuments();
+    const totalMessages = await MessageModel.countDocuments();
+
+    // Compute real AI token usage from audit logs
+    const aiLogs = await AIAuditLogModel.aggregate([
+      { $group: { _id: null, totalTokens: { $sum: { $add: ['$promptTokens', '$completionTokens'] } } } },
+    ]).catch(() => []);
+    const aiTokenUsage = aiLogs[0]?.totalTokens || 0;
+    const aiEstimatedCostUsd = parseFloat((aiTokenUsage * 0.000003).toFixed(4));
+
+    // Compute real MRR from active subscriptions
+    const activeSubs = await SubscriptionModel.find({ status: 'ACTIVE' }).lean().catch(() => []);
+    let mrrUsd = 0;
+    for (const sub of activeSubs) {
+      if (sub.planSlug === 'pro') mrrUsd += 29;
+      else if (sub.planSlug === 'agency') mrrUsd += 79;
+    }
 
     return res.json({
       success: true,
       stats: {
-        totalUsers: totalUsers || 142,
-        totalWorkspaces: totalWorkspaces || 89,
-        totalConnectedAccounts: totalConnectedAccounts || 64,
-        totalWorkflows: totalWorkflows || 312,
-        totalLeads: totalLeads || 18450,
-        totalMessages: totalMessages || 142800,
-        aiTokenUsage: 4829100,
-        aiEstimatedCostUsd: 14.48,
-        mrrUsd: 4890.00,
+        totalUsers,
+        totalWorkspaces,
+        totalConnectedAccounts,
+        totalWorkflows,
+        totalLeads,
+        totalMessages,
+        aiTokenUsage,
+        aiEstimatedCostUsd,
+        mrrUsd,
         systemStatus: emergencyControls.MAINTENANCE_MODE ? 'MAINTENANCE_MODE' : 'ALL_SYSTEMS_OPERATIONAL',
       },
     });
@@ -108,12 +132,15 @@ adminRouter.get('/stats', async (_req: Request, res: Response, next: NextFunctio
 adminRouter.get('/tenants', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const workspaces = await WorkspaceModel.find().lean().catch(() => []);
-    const sampleTenants = workspaces.length > 0 ? workspaces : [
-      { id: 'ws_1', name: '@mybrand_official', owner: 'alex@brand.com', plan: 'PRO', status: 'ACTIVE', connectedAccounts: 2 },
-      { id: 'ws_2', name: '@fashion_store_uk', owner: 'finance@fashion.co.uk', plan: 'AGENCY', status: 'ACTIVE', connectedAccounts: 6 },
-      { id: 'ws_3', name: '@agency_demo', owner: 'agency@digital.io', plan: 'AGENCY', status: 'SUSPENDED', connectedAccounts: 1 },
-    ];
-    return res.json({ success: true, tenants: sampleTenants });
+    const formattedTenants = workspaces.map((w: any) => ({
+      id: w._id.toString(),
+      name: w.name,
+      slug: w.slug,
+      owner: w.ownerId ? w.ownerId.toString() : 'N/A',
+      status: w.status || 'ACTIVE',
+      createdAt: w.createdAt,
+    }));
+    return res.json({ success: true, tenants: formattedTenants });
   } catch (err) {
     return next(err);
   }

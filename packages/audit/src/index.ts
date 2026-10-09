@@ -29,6 +29,7 @@ export async function audit(input: AuditLogInput): Promise<void> {
 export const AuditAction = {
   AUTH_REGISTER: 'auth.register',
   AUTH_LOGIN: 'auth.login',
+  AUTH_ADMIN_LOGIN: 'auth.admin_login',
   AUTH_GOOGLE_LOGIN: 'auth.google_login',
   AUTH_LOGOUT: 'auth.logout',
   WORKSPACE_CREATE: 'workspace.create',
