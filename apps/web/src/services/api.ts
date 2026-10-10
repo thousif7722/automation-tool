@@ -1,9 +1,15 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 export async function fetchAPI<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const isAdminRequest =
+    typeof window !== 'undefined' &&
+    (window.location.pathname.startsWith('/admin') || endpoint.includes('/admin') || endpoint.includes('admin-me'));
+
   const token =
     typeof window !== 'undefined'
-      ? localStorage.getItem('token') || localStorage.getItem('autodm_token') || localStorage.getItem('admin_token')
+      ? isAdminRequest
+        ? localStorage.getItem('admin_token') || localStorage.getItem('autodm_token') || localStorage.getItem('token')
+        : localStorage.getItem('token') || localStorage.getItem('autodm_token') || localStorage.getItem('admin_token')
       : null;
 
   const activeWorkspaceId =

@@ -44,6 +44,7 @@ export default function AdminLoginPage() {
       if (res?.success && res.tokens?.accessToken) {
         localStorage.setItem('admin_token', res.tokens.accessToken);
         localStorage.setItem('autodm_token', res.tokens.accessToken);
+        localStorage.setItem('token', res.tokens.accessToken);
         setSuccess(true);
         setTimeout(() => {
           router.push('/admin');
@@ -52,7 +53,13 @@ export default function AdminLoginPage() {
         setError(res?.error || 'Authentication failed. Administrator access required.');
       }
     } catch (err: any) {
-      setError(err?.message || 'Invalid administrator credentials or unauthorized platform role.');
+      if (err?.status === 401) {
+        setError('Invalid administrator credentials.');
+      } else if (err?.status === 403) {
+        setError('Access Denied: Platform administrator privileges required.');
+      } else {
+        setError(err?.message || 'Authentication error. Please check your connection and credentials.');
+      }
     } finally {
       setLoading(false);
     }

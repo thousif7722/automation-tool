@@ -10,7 +10,8 @@ import { hashPassword } from '@insta-automation/auth';
 import { getEnv } from '@insta-automation/config';
 
 async function provisionAdmin() {
-  const email = process.env.ADMIN_EMAIL || process.argv[2];
+  const rawEmail = process.env.ADMIN_EMAIL || process.argv[2];
+  const email = rawEmail ? rawEmail.toLowerCase().trim() : '';
   const password = process.env.ADMIN_PASSWORD || process.argv[3];
   const name = process.env.ADMIN_NAME || 'Platform Owner';
   const role = (process.env.ADMIN_ROLE as 'admin' | 'superadmin') || 'superadmin';

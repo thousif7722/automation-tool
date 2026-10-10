@@ -13,8 +13,9 @@ export const authRouter = Router();
 authRouter.post('/register', validate(RegisterSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, email, password } = req.body;
+    const cleanEmail = email ? email.toLowerCase().trim() : '';
 
-    const existingUser = await UserModel.findOne({ email }).lean();
+    const existingUser = await UserModel.findOne({ email: cleanEmail }).lean();
     if (existingUser) {
       return next(Errors.Conflict('An account with this email address already exists.'));
     }
@@ -22,7 +23,7 @@ authRouter.post('/register', validate(RegisterSchema), async (req: Request, res:
     const passwordHash = await hashPassword(password);
     const user = await UserModel.create({
       name,
-      email,
+      email: cleanEmail,
       passwordHash,
       globalRole: 'user',
       isEmailVerified: false,
@@ -69,8 +70,9 @@ authRouter.post('/register', validate(RegisterSchema), async (req: Request, res:
 authRouter.post('/login', validate(LoginSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
+    const cleanEmail = email ? email.toLowerCase().trim() : '';
 
-    const user = await UserModel.findOne({ email }).select('+passwordHash').exec();
+    const user = await UserModel.findOne({ email: cleanEmail }).select('+passwordHash').exec();
     if (!user || !user.passwordHash) {
       return next(Errors.Unauthorized('Invalid email or password'));
     }
@@ -194,10 +196,11 @@ authRouter.get('/me', authMiddleware, async (req: Request, res: Response, next: 
 authRouter.post('/admin-login', validate(LoginSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
+    const cleanEmail = email ? email.toLowerCase().trim() : '';
 
-    const user = await UserModel.findOne({ email }).select('+passwordHash').exec();
+    const user = await UserModel.findOne({ email: cleanEmail }).select('+passwordHash').exec();
     if (!user || !user.passwordHash) {
-      await audit({ action: AuditAction.AUTH_ADMIN_LOGIN, ipAddress: req.ip, userAgent: req.header('user-agent'), result: 'FAILURE', metadata: { email, reason: 'Invalid user' } });
+      await audit({ action: AuditAction.AUTH_ADMIN_LOGIN, ipAddress: req.ip, userAgent: req.header('user-agent'), result: 'FAILURE', metadata: { email: cleanEmail, reason: 'Invalid user' } });
       return next(Errors.Unauthorized('Invalid administrator credentials'));
     }
 
